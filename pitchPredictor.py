@@ -30,7 +30,7 @@ def create_pie_chart(title, data):
 
     for pair in data:
         if pair[1] > 0:
-            label = pair[0] + " | " + str(pair[1]) + " (" + str(round(float(pair[1])/float(total), 3) * 100) + "%)"
+            label = pair[0] + " | " + str(pair[1]) + " (" + str(round(float(pair[1])/float(total) * 100, 3)) + "%)"
             labels.append(label)
             sizes.append(int(pair[1]))
 
@@ -65,23 +65,29 @@ class pitch:
         self.cpType = cp    
 
 def incrementCount():
-    if ballOrK:
+    if outcome == "Strike":
         st.session_state.currStrikes += 1
         if st.session_state.currStrikes > 2:
             st.session_state.currStrikes = 0
             st.session_state.currBalls = 0
 
-    else:
+    elif outcome == "Ball":
         st.session_state.currBalls += 1
         if st.session_state.currBalls > 3:
-            st.session_state.strike = 0
+            st.session_state.currStrikes = 0
             st.session_state.currBalls = 0
 
+    elif outcome == "Foul":
+        if st.session_state.currStrikes < 2:
+            st.session_state.currStrikes += 1
+
 def processPitch(currPitch:pitch):
-    count = (currPitch.sit.balls, currPitch.sit.strikes) 
-    st.session_state.allPitches.append(currPitch)
-    st.session_state.previousPitch = currPitch.cpType
-    incrementCount()
+    if not newAB:
+        incrementCount()
+        st.session_state.allPitches.append(currPitch)
+        st.session_state.previousPitch = currPitch.cpType
+
+    print(str(st.session_state.currBalls) + "-" + str(st.session_state.currStrikes))
 
     countMatchPitches = []
     leftPitches = []
@@ -172,7 +178,7 @@ if "pitchCount" not in st.session_state:
 
 with st.sidebar:
     st.title("Count: " + str(st.session_state.currBalls) + "-" + str(st.session_state.currStrikes))
-    ballOrK = st.toggle(label="Ball/Strike")
+    outcome = st.select_slider(label="Ball/Foul/Strike", options=["Ball", "Foul", "Strike"])
     with st.container(height = 240):
         col1, col2 = st.columns([1,2.5])
 
@@ -195,8 +201,11 @@ with st.sidebar:
 
     newAB = st.button(label="New AB")
     if newAB:
-        st.session_state.strike = 0
+        st.session_state.currStrikes = 0
         st.session_state.currBalls = 0
+        sit = situation(st.session_state.currBalls, st.session_state.currStrikes,handedness, st.session_state.previousPitch)
+        currPitch = pitch(st.session_state.pitchCount, sit, st.session_state.previousPitch)
+        processPitch(currPitch)
 
 gCol1, gcol2 = st.columns([1,1])
 
