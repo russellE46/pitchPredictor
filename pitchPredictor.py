@@ -1,6 +1,5 @@
 import streamlit as st
 import matplotlib.pyplot as plt
-import numpy as np
 
 #Order based on:
 #Count
@@ -8,7 +7,7 @@ import numpy as np
 #CountHand
 #PreviousPitch
 #CountHandPreviousPitch
-
+debug = False
 pitchTypes = ["4SFB", "SNK", "CUT", "CB/SCV/12-6CB/SCRB", "SL", "CH/SPL/FRK", "SLV", "KN"]
 
 def create_pie_chart(title, data):
@@ -87,7 +86,8 @@ def processPitch(currPitch:pitch):
         st.session_state.allPitches.append(currPitch)
         st.session_state.previousPitch = currPitch.cpType
 
-    print(str(st.session_state.currBalls) + "-" + str(st.session_state.currStrikes))
+    if debug:
+        print(str(st.session_state.currBalls) + "-" + str(st.session_state.currStrikes))
 
     countMatchPitches = []
     leftPitches = []
@@ -162,7 +162,8 @@ def processPitch(currPitch:pitch):
 
 
 if "allPitches" not in st.session_state:
-    print("creating data")
+    if debug:
+        print("creating data")
     st.session_state["allPitches"] = []
     st.session_state.output = {}
 
